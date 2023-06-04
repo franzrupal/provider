@@ -14,7 +14,7 @@ void main() {
         primarySwatch: Colors.blue,
       ),
       home: const HomePage(),
-      routes: {'/new': (context) => const Material()},
+      routes: {'/new': (context) => const NewBreadCrumbWidget()},
     ),
   ));
 }
@@ -42,7 +42,7 @@ class BreadCrumb {
 
 class BreadCrumbProvider extends ChangeNotifier {
   final List<BreadCrumb> _items = [];
-  UnmodifiableListView<BreadCrumb> get item => UnmodifiableListView(_items);
+  UnmodifiableListView<BreadCrumb> get items => UnmodifiableListView(_items);
   void add(BreadCrumb breadCrumb) {
     for (final item in _items) {
       item.activate();
@@ -79,6 +79,7 @@ class BreadCrumbWidget extends StatelessWidget {
 
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -87,6 +88,9 @@ class HomePage extends StatelessWidget {
         centerTitle: true,
       ),
       body: Column(children: [
+        Consumer<BreadCrumbProvider>(builder: (context, value, child) {
+          return BreadCrumbWidget(breadCrumbs: value.items);
+        }),
         TextButton(
             onPressed: () {
               Navigator.of(context).pushNamed('/new');
@@ -97,6 +101,55 @@ class HomePage extends StatelessWidget {
               context.read<BreadCrumbProvider>().reset();
             },
             child: const Text('Reset')),
+      ]),
+    );
+  }
+}
+
+class NewBreadCrumbWidget extends StatefulWidget {
+  const NewBreadCrumbWidget({Key? key}) : super(key: key);
+
+  @override
+  State<NewBreadCrumbWidget> createState() => _NewBreadCrumbWidgetState();
+}
+
+class _NewBreadCrumbWidgetState extends State<NewBreadCrumbWidget> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    _controller = TextEditingController();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'Add new bread crumb',
+        ),
+      ),
+      body: Column(children: [
+        TextField(
+          controller: _controller,
+          decoration: const InputDecoration(
+              hintText: 'Enter a new bread crumb here...'),
+        ),
+        TextButton(
+            onPressed: () {
+              final text = _controller.text;
+              final breadCrumb = BreadCrumb(isActive: false, name: text);
+              context.read()<BreadCrumbProvider>().add(breadCrumb);
+              Navigator.of(context).pop();
+            },
+            child: const Text('Add'))
       ]),
     );
   }

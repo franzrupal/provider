@@ -37,7 +37,7 @@ class BreadCrumb {
   @override
   int get hashCode => uuid.hashCode;
 
-  String get title => name + (isActive ? '>' : '');
+  String get title => name + (isActive ? ' > ' : '');
 }
 
 class BreadCrumbProvider extends ChangeNotifier {
@@ -87,21 +87,35 @@ class HomePage extends StatelessWidget {
         title: const Text('Home Page'),
         centerTitle: true,
       ),
-      body: Column(children: [
-        Consumer<BreadCrumbProvider>(builder: (context, value, child) {
-          return BreadCrumbWidget(breadCrumbs: value.items);
-        }),
-        TextButton(
-            onPressed: () {
-              Navigator.of(context).pushNamed('/new');
-            },
-            child: const Text('Add new breadcrumb')),
-        TextButton(
-            onPressed: () {
-              context.read<BreadCrumbProvider>().reset();
-            },
-            child: const Text('Reset')),
-      ]),
+      body: Column(
+        children: [
+          Align(
+            alignment: Alignment.topLeft,
+            child:
+                Consumer<BreadCrumbProvider>(builder: (context, value, child) {
+              return BreadCrumbWidget(breadCrumbs: value.items);
+            }),
+          ),
+          const SizedBox(height: 20),
+          Column(
+            children: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pushNamed('/new');
+                },
+                child: const Text('Add new breadcrumb'),
+              ),
+              const SizedBox(height: 10),
+              TextButton(
+                onPressed: () {
+                  context.read<BreadCrumbProvider>().reset();
+                },
+                child: const Text('Reset'),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -132,8 +146,10 @@ class _NewBreadCrumbWidgetState extends State<NewBreadCrumbWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Add new bread crumb',
+        title: const Center(
+          child: Text(
+            'Add new bread crumb',
+          ),
         ),
       ),
       body: Column(children: [
@@ -145,9 +161,13 @@ class _NewBreadCrumbWidgetState extends State<NewBreadCrumbWidget> {
         TextButton(
             onPressed: () {
               final text = _controller.text;
-              final breadCrumb = BreadCrumb(isActive: false, name: text);
-              context.read()<BreadCrumbProvider>().add(breadCrumb);
-              Navigator.of(context).pop();
+              if (text.isNotEmpty) {
+                final breadCrumb = BreadCrumb(isActive: false, name: text);
+                context.read<BreadCrumbProvider>().add(
+                      breadCrumb,
+                    );
+                Navigator.of(context).pop();
+              }
             },
             child: const Text('Add'))
       ]),
